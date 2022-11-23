@@ -20,13 +20,20 @@ def main(train, test, K, C, verbose):
 		# use knn method
 		print("use knn classifier") 
 
+		if not test:
+			print("did not submit a test file")
+
 		k = KNN(verbose, K)
 
 	else:
 		# use naive bayes 
 		print("use naive bayes classifier")
 
+		if not test:
+			print("did not submit a test file")
+
 		n = NaiveBayes(verbose, C)
+		n.train(train)
 
 
 
