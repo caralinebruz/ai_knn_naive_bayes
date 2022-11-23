@@ -29,6 +29,11 @@ def main(train, test, K, C, verbose):
 		# use naive bayes 
 		print("use naive bayes classifier")
 
+		if not C:
+			print("not using laplacian correction")
+		else:
+			print("using laplacian correction value %s" % C)
+
 		if not test:
 			print("did not submit a test file")
 

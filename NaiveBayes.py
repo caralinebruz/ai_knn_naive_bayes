@@ -14,4 +14,5 @@ class NaiveBayes:
 
 
 	def train(self, data):
-		pass
+		# create a dataframe with the data
+		df = pd.DataFrame(data=data)
