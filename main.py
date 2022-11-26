@@ -11,7 +11,7 @@ import NaiveBayes
 from NaiveBayes import NaiveBayes
 
 
-def main(train, test, K, C, v_verbose, distance_function, centroids):
+def main(train, test, K, C, verbose, distance_function, centroids):
 	print("OK. starting.")
 
 	# if there are centroids, we are doing kmeans
@@ -67,14 +67,17 @@ def pair(arg):
 if __name__ == '__main__':
 	# USAGE: 
 
-	# knn 
-	#   learn -train train.txt -test test.txt -K 3
+	# KNN 
+	#   ./main.py -train data/inputs/knn.1.train.txt -test data/inputs/knn.1.test.txt -K 3
 
-	# naive bayes with no laplacian, but with kmeans args ??
-	#	learn -train train.txt -test test.txt [[x0,y0], [x1,y2], ...]
+	# NAIVE BAYES
+	#	./main.py -train data/inputs/nb.1.train.csv -test data/inputs/nb.1.test.csv
+	# 	./main.py -train data/inputs/nb.1.train.csv -test data/inputs/nb.1.test.csv -C 2
 
-	# kmeans 
+	# KMEANS 
 	#   ./main.py -train data/inputs/kmeans.1.txt 0,500 200,200 1000,1000
+
+
 
 	# -train
 	# -test
@@ -83,7 +86,6 @@ if __name__ == '__main__':
 	# -d			: distance function
 	# -v			: optional
 	# [centroids] 	: optional
-
 
 
 	#
@@ -131,9 +133,9 @@ if __name__ == '__main__':
 		test_lines = args.test.readlines()
 
 	if args.K:
-		K = args.K
+		K = int(args.K)
 	if args.C:
-		C = args.C
+		C = int(args.C)
 	if args.d:
 		distance_function = args.d
 	if args.centroids:
