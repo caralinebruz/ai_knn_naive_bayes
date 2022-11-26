@@ -35,6 +35,7 @@ class KNN:
 		self.test_data = None
 		self.train_df = None
 		self.numcols = 0
+		self.labels = []
 
 	def clean(self,text):
 		''' Prepares a file for use. Validates row length
@@ -159,6 +160,21 @@ class KNN:
 		return selected_class
 
 
+	def prepare_labels(self):
+		''' Combine labels seen between the test and
+			train sets (for precision recall use)
+		'''
+
+		labels_in_train = self.train_df.Class.unique()
+		labels_in_test = self.test_df.Class.unique()
+
+		labels = []
+		labels.extend(labels_in_test)
+		labels.extend(labels_in_train)
+
+		unique_labels = sorted(list(set(labels)))
+		self.labels = unique_labels
+
 
 	def test(self, data):
 
@@ -169,6 +185,17 @@ class KNN:
 		# print(df)
 		self.test_df = df
 		self.test_data = clean
+
+		# # get the unique values "actuals" in test set
+		self.prepare_labels()
+		actual = {}
+		predicted = {}
+		correct_prediction = {}
+		for label in self.labels:
+			actual[label] = 0
+			predicted[label] = 0
+			correct_prediction[label] = 0
+
 
 
 		i = 0
@@ -208,13 +235,27 @@ class KNN:
 
 				print("want=%s got=%s" % (items_true_class, my_classification))
 
+				predicted[my_classification] += 1
+				actual[items_true_class] += 1
+
+				if items_true_class == my_classification:
+					correct_prediction[items_true_class] += 1
 
 
 
+		print("actuals")
+		for k,v in actual.items():
+			print(k,v)
 
 
+		print("predicted")
+		for k,v in predicted.items():
+			print(k,v)
 
 
+		print("correct")
+		for k,v in correct_prediction.items():
+			print(k,v)
 
 
 
