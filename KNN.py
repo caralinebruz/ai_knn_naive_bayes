@@ -18,7 +18,7 @@ def euclidean_distance_sq(vector_1, vector_2):
 	# https://machinelearningmastery.com/distance-measures-for-machine-learning/
 	euclidean_distance = sum((e1-e2)**2 for e1, e2 in zip(vector_1,vector_2))
 
-	print("euclidean_distance: %s" % euclidean_distance)
+	# print("euclidean_distance: %s" % euclidean_distance)
 	return euclidean_distance
 
 
@@ -63,10 +63,8 @@ class KNN:
 
 		clean = self.clean(data)
 		df = pd.DataFrame(data=clean)
-		# df = df.replace('\n','', regex=True)
 		df.columns = [*df.columns[:-1], 'Class']
 
-		print(df)
 		self.train_data = clean
 		self.train_df = df
 
@@ -75,13 +73,13 @@ class KNN:
 
 		# for each row in the training data
 		# get the distances
-		print("using test data set row")
-		print(test_row)
+		# print("using test data set row")
+		# print(test_row)
 		test_set = test_row[:-1]
 		test_set = list(map(int, test_set))
 
 
-		print("measuring nearest rows...")
+		# print("measuring nearest rows...")
 		distances = []
 		for x in range(len(self.train_data)):
 
@@ -89,8 +87,8 @@ class KNN:
 			train_set = list(map(int, train_set))
 
 
-			print(train_set)
-			print(test_set)
+			# print(train_set)
+			# print(test_set)
 
 			if len(test_set) != len(train_set):
 				print("inputs do not have same number of cols. abort")
@@ -105,36 +103,41 @@ class KNN:
 
 	def vote(self, distances_df):
 
+		if self.verbose:
+			print("overall results:")
+			print(distances_df)
+
 		# select the K smallest distances (min neighbors)
 		closest_df = distances_df.nsmallest(self.K, 'distances')
-		print(closest_df)
+
+		if self.verbose:
+			print("smallest %s rows:" % self.K)
+			print(closest_df)
 
 		# determine the class based on weighted 1/distance
 
 		# https://stackoverflow.com/questions/33768122/python-pandas-dataframe-how-to-multiply-entire-column-with-a-scalar
 		closest_df['weighted_distance'] = closest_df['distances'].apply(lambda x: 1/x)
-		print(closest_df)
+
+		if self.verbose:
+			print("apply 1/distance:")
+			print(closest_df)
 
 		# sum weighted distances by group 'Class'
 		# https://stackoverflow.com/questions/39922986/how-do-i-pandas-group-by-to-get-sum
 		results_df = closest_df.groupby(['Class'])['weighted_distance'].sum().reset_index()
 		#results_df = closest_df.groupby(['Class'])['weighted_distance'].sum()
 
-		# then, select the class with the largest vote
-		# selected = 
-		# 
+		results_df = results_df.sort_values('weighted_distance', ascending=False)
+		
+		if self.verbose:
+			print("results")
+			print(results_df)
 
-		# rename result column
-
-		print("results")
-		print(results_df)
-
-		# print(results_df[results_df.weighted_distance == results_df.weighted_distance.max()])
-		# top = results_df[results_df.weighted_distance == results_df.weighted_distance.max()]
-		# print(top['Class'])
-
+		# take top most votes
 		selected_class = results_df.iloc[0]['Class']
-		print("selected class for row: %s" % selected_class)
+		if self.verbose:
+			print("selected class for row: %s" % selected_class)
 
 		return selected_class
 
@@ -144,20 +147,11 @@ class KNN:
 
 		clean = self.clean(data)
 		df = pd.DataFrame(data=clean)
-		# df = df.replace('\n','', regex=True)
 		df.columns = [*df.columns[:-1], 'Class']
 
-		print(df)
+		# print(df)
 		self.test_df = df
 		self.test_data = clean
-
-
-		print("testing....")
-
-		# for index, row in df.iterrows():
-
-		# 	if index == 1:
-		# 		print(row)
 
 
 		i = 0
@@ -169,21 +163,33 @@ class KNN:
 			# make a copy of the train dataframe
 			train_df_copy = self.train_df.copy()
 
-			if i == 0:
+			# if i == 1:
+			if True:
 
-				d = self.get_distances(clean[i])
+				item = clean[i]
+				items_true_class = item[-1]
 
-				print(d)
+
+				if self.verbose:
+					print("using test row:")
+					print(item)
+
+
+				d = self.get_distances(item)
+
+				# print(d)
 
 				train_df_copy['distances'] = d
 
 
 				# represents the distances from the test set
 				# to every point in the training set
-				print(train_df_copy)
+				# print(train_df_copy)
 
 				# step 2, voting, weighted
-				self.vote(train_df_copy)
+				my_classification = self.vote(train_df_copy)
+
+				print("want=%s got=%s" % (items_true_class, my_classification))
 
 
 
