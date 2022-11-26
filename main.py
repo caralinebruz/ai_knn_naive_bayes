@@ -22,12 +22,21 @@ def main(train, test, K, C, verbose, distance_function, centroids):
 			# value must be given for KNN
 			# use knn method
 			print("use knn classifier") 
-			print("using distance function")
+			print("using distance function %s" % distance_function)
 
 			if not test:
 				print("did not submit a test file")
 
 			k = KNN(verbose, K, distance_function)
+
+			k.train(train)
+			k.test(test)
+
+
+
+
+
+
 
 		else:
 			# use naive bayes 
