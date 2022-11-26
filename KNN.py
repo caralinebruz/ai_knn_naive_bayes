@@ -36,6 +36,9 @@ class KNN:
 		self.train_df = None
 		self.numcols = 0
 		self.labels = []
+		self.actual = {}
+		self.predicted = {}
+		self.correct_prediction = {}
 
 	def clean(self,text):
 		''' Prepares a file for use. Validates row length
@@ -175,6 +178,43 @@ class KNN:
 		unique_labels = sorted(list(set(labels)))
 		self.labels = unique_labels
 
+	def initialize_precision_recall(self):
+		''' Makes dictionaries for each label
+			for tracking prediction scores
+		'''
+		actual = {}
+		predicted = {}
+		correct_prediction = {}
+		for label in self.labels:
+			actual[label] = 0
+			predicted[label] = 0
+			correct_prediction[label] = 0
+
+		self.actual = actual
+		self.predicted = predicted
+		self.correct_prediction = correct_prediction
+
+
+	def calculate_precision_recall(self):
+
+		print("actuals")
+		for k,v in self.actual.items():
+			print(k,v)
+
+
+		print("predicted")
+		for k,v in self.predicted.items():
+			print(k,v)
+
+
+		print("correct")
+		for k,v in self.correct_prediction.items():
+			print(k,v)
+
+		for label in self.labels:
+			print("Label=%s Precision=%s/%s Recall=%s/%s" % (label, self.correct_prediction[label], self.predicted[label], self.correct_prediction[label], self.actual[label]))
+
+
 
 	def test(self, data):
 
@@ -188,14 +228,7 @@ class KNN:
 
 		# # get the unique values "actuals" in test set
 		self.prepare_labels()
-		actual = {}
-		predicted = {}
-		correct_prediction = {}
-		for label in self.labels:
-			actual[label] = 0
-			predicted[label] = 0
-			correct_prediction[label] = 0
-
+		self.initialize_precision_recall()
 
 
 		i = 0
@@ -235,27 +268,18 @@ class KNN:
 
 				print("want=%s got=%s" % (items_true_class, my_classification))
 
-				predicted[my_classification] += 1
-				actual[items_true_class] += 1
+				self.predicted[my_classification] += 1
+				self.actual[items_true_class] += 1
 
 				if items_true_class == my_classification:
-					correct_prediction[items_true_class] += 1
+					self.correct_prediction[items_true_class] += 1
+
+
+		self.calculate_precision_recall()
 
 
 
-		print("actuals")
-		for k,v in actual.items():
-			print(k,v)
 
-
-		print("predicted")
-		for k,v in predicted.items():
-			print(k,v)
-
-
-		print("correct")
-		for k,v in correct_prediction.items():
-			print(k,v)
 
 
 
