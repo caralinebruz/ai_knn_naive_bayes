@@ -117,7 +117,7 @@ class KNN:
 		# determine the class based on weighted 1/distance
 
 		# https://stackoverflow.com/questions/33768122/python-pandas-dataframe-how-to-multiply-entire-column-with-a-scalar
-		closest_df['weighted_distance'] = closest_df['distances'].apply(lambda x: 1/x)
+		closest_df['weighted_distance'] = closest_df['distances'].apply(lambda x: 1/x if x>0 else 0)
 
 		if self.verbose:
 			print("apply 1/distance:")
