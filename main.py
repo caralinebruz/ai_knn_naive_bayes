@@ -10,6 +10,9 @@ from KNN import KNN
 import NaiveBayes
 from NaiveBayes import NaiveBayes
 
+import KMeans
+from KMeans import KMeans
+
 
 def main(train, test, K, C, verbose, distance_function, centroids):
 	print("OK. starting.")
@@ -33,11 +36,6 @@ def main(train, test, K, C, verbose, distance_function, centroids):
 			k.test(test)
 
 
-
-
-
-
-
 		else:
 			# use naive bayes 
 			print("use naive bayes classifier")
@@ -55,6 +53,7 @@ def main(train, test, K, C, verbose, distance_function, centroids):
 
 	else:
 		print("use k-means")
+		k = KMeans(distance_function)
 
 
 
@@ -84,7 +83,7 @@ if __name__ == '__main__':
 	# 	./main.py -train data/inputs/nb.1.train.csv -test data/inputs/nb.1.test.csv -C 2
 
 	# KMEANS 
-	#   ./main.py -train data/inputs/kmeans.1.txt 0,500 200,200 1000,1000
+	#   ./main.py -train data/inputs/kmeans.1.txt -centroids 0,500 200,200 1000,1000
 
 
 
