@@ -114,14 +114,31 @@ class KNN:
 			print("smallest %s rows:" % self.K)
 			print(closest_df)
 
+
+
 		# determine the class based on weighted 1/distance
 
-		# https://stackoverflow.com/questions/33768122/python-pandas-dataframe-how-to-multiply-entire-column-with-a-scalar
-		closest_df['weighted_distance'] = closest_df['distances'].apply(lambda x: 1/x if x>0 else 0)
+		exact = closest_df.loc[closest_df['distances'] == 0]
+		if not exact.empty:
+			selected_class = exact.iloc[0]['Class']
+			if self.verbose:
+				print("found exact match, selected class for row: %s" % selected_class)
+			return selected_class
+
+		# normalize the distances
+		# except if the distance is zero, avoid divbyzero, use infinity
+		closest_df['weighted_distance'] = closest_df['distances'].apply(lambda x: 1/x if x>0 else 1)
 
 		if self.verbose:
 			print("apply 1/distance:")
 			print(closest_df)
+
+
+		# # if anything is infinity, just return that class
+		# if np.isinf(closest_df):
+		# 	if self.verbose:
+		# 		print("exact point found")
+		# 	print(closest_df.loc[closest_df['weighted_distance'] == np.inf])
 
 		# sum weighted distances by group 'Class'
 		# https://stackoverflow.com/questions/39922986/how-do-i-pandas-group-by-to-get-sum
@@ -163,7 +180,7 @@ class KNN:
 			# make a copy of the train dataframe
 			train_df_copy = self.train_df.copy()
 
-			# if i == 1:
+			#if i == 12:
 			if True:
 
 				item = clean[i]
