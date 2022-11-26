@@ -11,39 +11,54 @@ import NaiveBayes
 from NaiveBayes import NaiveBayes
 
 
-def main(train, test, K, C, verbose):
+def main(train, test, K, C, v_verbose, distance_function, centroids):
 	print("OK. starting.")
 
-	# evaluate the classifier method
-	if K > 0:
-		# value must be given for KNN
-		# use knn method
-		print("use knn classifier") 
+	# if there are centroids, we are doing kmeans
+	if not centroids:
 
-		if not test:
-			print("did not submit a test file")
+		# evaluate the classifier method
+		if K > 0:
+			# value must be given for KNN
+			# use knn method
+			print("use knn classifier") 
+			print("using distance function")
 
-		k = KNN(verbose, K)
+			if not test:
+				print("did not submit a test file")
+
+			k = KNN(verbose, K, distance_function)
+
+		else:
+			# use naive bayes 
+			print("use naive bayes classifier")
+
+			if not C:
+				print("not using laplacian correction")
+			else:
+				print("using laplacian correction value %s" % C)
+
+			if not test:
+				print("did not submit a test file")
+
+			n = NaiveBayes(verbose, C)
+			n.train(train)
 
 	else:
-		# use naive bayes 
-		print("use naive bayes classifier")
-
-		if not C:
-			print("not using laplacian correction")
-		else:
-			print("using laplacian correction value %s" % C)
-
-		if not test:
-			print("did not submit a test file")
-
-		n = NaiveBayes(verbose, C)
-		n.train(train)
+		print("use k-means")
 
 
 
-	# need to figure out what will be the input for kmeans??
 
+
+
+# https://stackoverflow.com/questions/33499173/how-to-create-argument-of-type-list-of-pairs-with-argparse
+def pair(arg):
+	# For simplity, assume arg is a pair of integers
+	# separated by a comma. If you want to do more
+	# validation, raise argparse.ArgumentError if you
+	# encounter a problem.
+	return [int(x) for x in arg.split(',')]
 
 
 
@@ -51,7 +66,6 @@ def main(train, test, K, C, verbose):
 
 if __name__ == '__main__':
 	# USAGE: 
-	# 	./main.py -df .9 -tol 0.0001 data/input/maze.txt
 
 	# knn 
 	#   learn -train train.txt -test test.txt -K 3
@@ -60,12 +74,13 @@ if __name__ == '__main__':
 	#	learn -train train.txt -test test.txt [[x0,y0], [x1,y2], ...]
 
 	# kmeans 
-	#   learn -train some-input.txt 0,500 200,200 1000,1000
+	#   ./main.py -train data/inputs/kmeans.1.txt 0,500 200,200 1000,1000
 
 	# -train
 	# -test
 	# -K			: 
 	# -C			: optional, default of 0 means don't use
+	# -d			: distance function
 	# -v			: optional
 	# [centroids] 	: optional
 
@@ -76,22 +91,28 @@ if __name__ == '__main__':
 	#
 	train_file = "" # file
 	test_file = "" 	# file
+	train_lines = []
+	test_lines = []
 	K = 0 			# num clusters
 	C = 0 			# laplacian correction value (0 means unused)
 	v_verbose = False
-	centroids = []	# only used in kmeans
 
-	train_lines = []
-	test_lines = []
+	# kmeans 
+	centroids = []	# only used in kmeans
+	distance_function = "e2" # in manhattan or euclidean squared (weighted)
 
 	parser = argparse.ArgumentParser(description='KNN and or Naive Bayes parser')
-
 	parser.add_argument('-train', type=argparse.FileType('r'), help="training file")
 	parser.add_argument('-test', type=argparse.FileType('r'), help="test file")
 	parser.add_argument('-K', help="knn num clusters")
 	parser.add_argument('-C', help="optional naive bayes laplacian correction value")
 	parser.add_argument('-v', action='store_true', help="minimize values as costs")
 
+	# extra credit k-means
+	parser.add_argument('-d', help="<manh,e2>")
+	# -centroids  0,1 1,1 2,3
+	parser.add_argument('-centroids', type=pair, nargs='+')
+	
 
 	args = parser.parse_args()
 	print(args)
@@ -113,7 +134,11 @@ if __name__ == '__main__':
 		K = args.K
 	if args.C:
 		C = args.C
-
+	if args.d:
+		distance_function = args.d
+	if args.centroids:
+		centroids = args.centroids
+		print(centroids)
 	if args.v:
 		v_verbose = True
 
@@ -123,5 +148,4 @@ if __name__ == '__main__':
 		print("illegal arguments entered for K and C")
 		sys.exit(1)
 
-
-	main(train_lines, test_lines, K, C, v_verbose)
+	main(train_lines, test_lines, K, C, v_verbose, distance_function, centroids)
