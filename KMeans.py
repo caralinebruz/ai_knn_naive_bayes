@@ -135,9 +135,11 @@ class KMeans:
 				new_centroid_avg.append(dimension/num_datapoints_in_cluster)
 
 			print(new_centroid_avg)
+			new_centroids[cluster] = new_centroid_avg
 
-
-			# print(cluster_df.mean(axis=0))
+		print("new centroid locations")
+		for k,v in new_centroids.items():
+			print(k,v)
 
 
 
