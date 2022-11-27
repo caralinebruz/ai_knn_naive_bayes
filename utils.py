@@ -13,7 +13,7 @@ def euclidean_distance_sq(vector_1, vector_2):
 
 
 def manhattan_distance(vector_1, vector_2):
-	manhattan_distance = sum(abs(m1-m2) for m1, m2 in zip(vector_1,vector_2))
+	manhattan_distance = sum((abs(m1-m2)) for m1, m2 in zip(vector_2,vector_1))
 
 	# print("manhattan_distance: %s" % manhattan_distance)
 	return manhattan_distance

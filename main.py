@@ -88,6 +88,10 @@ if __name__ == '__main__':
 	# 	./main.py -train data/inputs/kmeans.2.txt -d manh -centroids 0,500,0 200,200,500 1000,1000,100
 
 
+	# his 
+	#	./main.py -train data/inputs/kmeans.2.txt -centroids 0,0,0 200,200,200 500,500,500
+
+
 
 	# -train
 	# -test
