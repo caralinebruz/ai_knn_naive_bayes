@@ -74,7 +74,8 @@ def pair(arg):
 
 
 if __name__ == '__main__':
-	# USAGE: 
+	'''
+	USAGE: 
 
 	# KNN 
 	#   ./main.py -train data/inputs/knn.1.train.txt -test data/inputs/knn.1.test.txt -K 3
@@ -83,24 +84,18 @@ if __name__ == '__main__':
 	#	./main.py -train data/inputs/nb.1.train.csv -test data/inputs/nb.1.test.csv
 	# 	./main.py -train data/inputs/nb.1.train.csv -test data/inputs/nb.1.test.csv -C 2
 
+
 	# KMEANS 
-	#   ./main.py -train data/inputs/kmeans.1.txt -centroids 0,500 200,200 1000,1000
-	# 	./main.py -train data/inputs/kmeans.2.txt -d manh -centroids 0,500,0 200,200,500 1000,1000,100
 
+		matches profs output
+		./main.py -train data/inputs/kmeans.1.txt -d e2 -centroids 0,500 200,200 1000,1000
 
-	# his 
-	#	./main.py -train data/inputs/kmeans.2.txt -centroids 0,0,0 200,200,200 500,500,500
+		matches profs output
+		./main.py -train data/inputs/kmeans.2.txt -d e2 -centroids 0,0,0 200,200,200 500,500,500
 
-
-
-	# -train
-	# -test
-	# -K			: 
-	# -C			: optional, default of 0 means don't use
-	# -d			: distance function
-	# -v			: optional
-	# [centroids] 	: optional
-
+		matches profs output
+		./main.py -train data/inputs/kmeans.2.txt -d manh -centroids 0,0,0 200,200,200 500,500,500
+	'''
 
 	#
 	# PARSE COMMAND LINE 
@@ -141,7 +136,8 @@ if __name__ == '__main__':
 		train_lines = args.train.readlines()
 
 	if not args.test:
-		print("no test file, assumes we will be doing pure kmeans")
+		pass
+		# print("no test file, assumes we will be doing pure kmeans")
 	else:
 		test_file = args.test
 		test_lines = args.test.readlines()
@@ -154,7 +150,7 @@ if __name__ == '__main__':
 		distance_function = args.d
 	if args.centroids:
 		centroids = args.centroids
-		print(centroids)
+		# print(centroids)
 	if args.v:
 		v_verbose = True
 

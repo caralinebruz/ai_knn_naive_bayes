@@ -9,7 +9,6 @@ from utils import euclidean_distance_sq, manhattan_distance
 
 
 
-
 class KMeans:
 
 	def __init__(self, verbose, distance_function):
@@ -54,11 +53,11 @@ class KMeans:
 		for i in range(len(self.centroids)):
 
 			centroid_name = "C" + str(i)
-			print(centroid_name)
 			self.cluster_names[centroid_name] = self.centroids[i]
 
-		for k,v in self.cluster_names.items():
-			print(k,v)
+		if self.verbose:
+			for k,v in self.cluster_names.items():
+				print(k,v)
 
 
 	def initialize_clusters(self):
@@ -71,8 +70,6 @@ class KMeans:
 
 
 	def get_distance_to_centroids(self, datapoint):
-		# print(datapoint)
-
 		distances = {}
 		datapoint_name = datapoint[-1]
 		data_vec = datapoint[:-1]
@@ -81,6 +78,7 @@ class KMeans:
 		for centroid, centroid_vec in self.cluster_names.items():
 
 			centroid_vec = list(map(int, centroid_vec))
+
 			if self.distance_function == "manh":
 				distances[centroid] = manhattan_distance(data_vec, centroid_vec)
 			else:
@@ -91,32 +89,27 @@ class KMeans:
 		nearest_cluster = None
 
 		for centroid_name, distance in distances.items():
-			print(centroid_name,distance)
+			# print(centroid_name,distance)
 
 			if distance < smallest:
 				smallest = distance 
 				nearest_cluster = centroid_name
 
-		# print("nearest_cluster %s" % nearest_cluster)
-		# print("datapoint name %s" % datapoint_name)
 		# assign to the nearest cluster
 		self.clusters[nearest_cluster].append(datapoint_name)
 
 
 	def update_centroids(self):
 		# Recompute the centroids as an average of all the points assigned
-
-
 		new_centroids = {}
 		for cluster, data in self.clusters.items():
 
 			# initialize a new centroid [0, 0, 0, 0]
 			new_centroid = [0] * self.dimensions
 
-			print("starting cluster %s" % cluster)
-
 			if not data:
-				print("warning, cluster is empty")
+				if self.verbose:
+					print("warning, cluster is empty")
 
 				# if there arent any items in the cluster
 				# retain old centroid value
@@ -132,26 +125,20 @@ class KMeans:
 				for i in range(len(self.datapoints[item])):
 					new_centroid[i] += int(self.datapoints[item][i])
 
-
-			print("sum")
-			print(new_centroid)
-
-			print("avg")
+			# calcualte average in each dimension
 			new_centroid_avg = []
 			for dimension in new_centroid:
 				new_centroid_avg.append(dimension/num_datapoints_in_cluster)
 
-			print(new_centroid_avg)
+			# print(new_centroid_avg)
 			new_centroids[cluster] = new_centroid_avg
 
-
-
-		print("new centroid locations")
-		for k,v in new_centroids.items():
-			print(k,v)
+		if self.verbose:
+			print("new centroid locations")
+			for k,v in new_centroids.items():
+				print(k,v)
 
 		return new_centroids
-
 
 
 	def save_dict_of_all_datapoints(self):
@@ -159,25 +146,25 @@ class KMeans:
 		for item in self.train_data:
 			name = item[-1]
 			data = item[:-1]
-
 			datapoints[name] = data
 
 		self.datapoints = datapoints
 
-		# for k,v in self.datapoints.items():
-		# 	print(k,v)
-
 
 	def iterate_to_convergence(self):
-
+		''' contains stopping criteria for convergence of centroid locations
+		'''
 		y=0
 		converge = False
 
 		while not converge:
+			if self.verbose:
+				print("Iteration %s" % y)
 
-			print("Iteration %s" % y)
+			# reset clusters to empty
 			self.initialize_clusters()
 
+			# assign datapoints to clusters
 			for i in range(len(self.train_data)):
 
 				if y==500:
@@ -185,27 +172,17 @@ class KMeans:
 					break
 
 				datapoint = self.train_data[i]
+				self.get_distance_to_centroids(datapoint)
 
-
-				#if i <= 10:
-				if True:
-		
-					self.get_distance_to_centroids(datapoint)
-
-
-			# evaluate the clusters
-			for k,v in self.clusters.items():
-				print(k,v)
-
-
+			# update centroid locations
 			new_centroids = self.update_centroids()
 
+			# evaluate if we should stop
 			change = False
 			for k,v in new_centroids.items():
 				for ok,ov in self.cluster_names.items():
 
 					if k == ok:
-
 						# my tolerance is simply to the nearest int
 						int_v = list(map(int, v))
 						int_ov = list(map(int, ov))
@@ -213,10 +190,6 @@ class KMeans:
 						if int_v != int_ov:
 							change = True
 						
-
-
-
-
 			if not change:
 				converge = True
 
@@ -225,17 +198,7 @@ class KMeans:
 				
 			else:
 				# print("not converged, need to continue until converge")
-
-				# print("old centroids:")
-				# for k,v in self.cluster_names.items():
-				# 	print(k,v)
-				# print("new centroids:")
-				# for k,v in new_centroids.items():
-				# 	print(k,v)
-
 				self.cluster_names = new_centroids
-
-
 
 			y+=1
 
@@ -243,16 +206,12 @@ class KMeans:
 
 
 	def print_results(self):
-
 		for cluster_name, items in self.clusters.items():
-
 			item_set = set(items)
 			print("%s = %s" % (cluster_name, items))
 
 		for centroid, location in self.cluster_names.items():
 			print("(%s)" % location)
-
-
 
 
 	def train(self, centroids, train):
@@ -264,12 +223,7 @@ class KMeans:
 
 		self.name_centroids()
 		
-
 		clean = self.clean(train)
-		df = pd.DataFrame(data=clean)
-		df.columns = [*df.columns[:-1], 'Name']
-
-
 
 
 		if self.dimensions != self.numcols - 1:
@@ -277,12 +231,11 @@ class KMeans:
 			sys.exit(1)
 
 		self.train_data = clean
-		self.train_df = df
+
 		# also add a dictionary of all datapoints
 		self.save_dict_of_all_datapoints()
 
-
-
+		# do k-means until converge
 		finished = self.iterate_to_convergence()
 		if finished:
 			self.print_results()
