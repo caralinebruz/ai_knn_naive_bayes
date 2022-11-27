@@ -141,6 +141,7 @@ class KMeans:
 		for k,v in new_centroids.items():
 			print(k,v)
 
+		return new_centroids
 
 
 
@@ -209,7 +210,24 @@ class KMeans:
 			print(k,v)
 
 
-		self.update_centroids()
+		new_centroids = self.update_centroids()
+
+		print("\nconverge?")
+		change = False
+		for k,v in new_centroids.items():
+			for ok,ov in self.cluster_names.items():
+
+				if k == ok:
+					# print(v)
+					# print(ov)
+					if v != ov:
+						change = True
+
+
+		if not change:
+			print("reached stopping criteria! woooo!")
+		else:
+			print("not converged, need to continue until converge")
 
 
 
