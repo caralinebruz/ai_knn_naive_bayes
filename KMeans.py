@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 import utils
-from utils import euclidean_distance_sq, average
+from utils import euclidean_distance_sq, manhattan_distance
 
 
 
@@ -49,7 +49,7 @@ class KMeans:
 		return data
 
 
-	def initialize_clusters(self):
+	def name_centroids(self):
 		# name each centroid
 		for i in range(len(self.centroids)):
 
@@ -60,6 +60,8 @@ class KMeans:
 		for k,v in self.cluster_names.items():
 			print(k,v)
 
+
+	def initialize_clusters(self):
 		# # initialize empty list for the clusters, originally
 		clusters = {}
 		for name in self.cluster_names:
@@ -79,7 +81,10 @@ class KMeans:
 		for centroid, centroid_vec in self.cluster_names.items():
 
 			centroid_vec = list(map(int, centroid_vec))
-			distances[centroid] = euclidean_distance_sq(data_vec, centroid_vec)
+			if self.distance_function == "manh":
+				distances[centroid] = manhattan_distance(data_vec, centroid_vec)
+			else:
+				distances[centroid] = euclidean_distance_sq(data_vec, centroid_vec)
 
 		# evaluate the distances to all centroids
 		smallest = float('inf')
@@ -92,8 +97,8 @@ class KMeans:
 				smallest = distance 
 				nearest_cluster = centroid_name
 
-		print("nearest_cluster %s" % nearest_cluster)
-		print("datapoint name %s" % datapoint_name)
+		# print("nearest_cluster %s" % nearest_cluster)
+		# print("datapoint name %s" % datapoint_name)
 		# assign to the nearest cluster
 		self.clusters[nearest_cluster].append(datapoint_name)
 
@@ -168,7 +173,9 @@ class KMeans:
 		self.centroids = centroids
 		self.num_clusters = len(centroids)
 		self.dimensions = len(centroids[0])
-		self.initialize_clusters()
+
+		self.name_centroids()
+		
 
 		clean = self.clean(train)
 		df = pd.DataFrame(data=clean)
@@ -203,10 +210,11 @@ class KMeans:
 		while not converge:
 
 			print("Iteration %s" % y)
+			self.initialize_clusters()
 
 			for i in range(len(self.train_data)):
 
-				if y==100:
+				if y==500:
 					print("break after 100 iterations")
 					break
 
@@ -226,26 +234,42 @@ class KMeans:
 
 			new_centroids = self.update_centroids()
 
-			print("\nconverge?")
-			# change = False
+			change = False
 			for k,v in new_centroids.items():
 				for ok,ov in self.cluster_names.items():
 
 					if k == ok:
-						# print(v)
-						# print(ov)
-						if v != ov:
+
+						# my tolerance is simply to the nearest int
+						int_v = list(map(int, v))
+						int_ov = list(map(int, ov))
+
+						if int_v != int_ov:
 							change = True
+						
+
+
 
 
 			if not change:
-				print("reached stopping criteria! woooo!")
 				converge = True
+
+				if self.verbose:
+					print("reached stopping criteria after %s iterations." % y)
+				
 			else:
-				print("not converged, need to continue until converge")
-				sc = {}
-				self.clusters = sc
+				# print("not converged, need to continue until converge")
+
+				# print("old centroids:")
+				# for k,v in self.cluster_names.items():
+				# 	print(k,v)
+				# print("new centroids:")
+				# for k,v in new_centroids.items():
+				# 	print(k,v)
+
 				self.cluster_names = new_centroids
+
+
 
 			y+=1
 
