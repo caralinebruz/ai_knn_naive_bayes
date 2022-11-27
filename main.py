@@ -53,7 +53,8 @@ def main(train, test, K, C, verbose, distance_function, centroids):
 
 	else:
 		print("use k-means")
-		k = KMeans(distance_function)
+		k = KMeans(verbose, distance_function)
+		k.train(centroids, train)
 
 
 
