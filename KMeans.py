@@ -69,7 +69,7 @@ class KMeans:
 
 
 	def get_distance_to_centroids(self, datapoint):
-		print(datapoint)
+		# print(datapoint)
 
 		distances = {}
 		datapoint_name = datapoint[-1]
@@ -86,12 +86,14 @@ class KMeans:
 		nearest_cluster = None
 
 		for centroid_name, distance in distances.items():
-			#print(centroid_name,distance)
+			print(centroid_name,distance)
 
 			if distance < smallest:
 				smallest = distance 
 				nearest_cluster = centroid_name
 
+		print("nearest_cluster %s" % nearest_cluster)
+		print("datapoint name %s" % datapoint_name)
 		# assign to the nearest cluster
 		self.clusters[nearest_cluster].append(datapoint_name)
 
@@ -116,7 +118,7 @@ class KMeans:
 			# iterate over each datapoint in the cluster
 			for item in data:
 				#print(item)
-				print(self.datapoints[item])
+				# print(self.datapoints[item])
 				#clusters_data.append(self.datapoints[item])
 
 				# add each dimension of the datapoint
@@ -155,8 +157,8 @@ class KMeans:
 
 		self.datapoints = datapoints
 
-		for k,v in self.datapoints.items():
-			print(k,v)
+		# for k,v in self.datapoints.items():
+		# 	print(k,v)
 
 
 
@@ -185,7 +187,7 @@ class KMeans:
 		self.save_dict_of_all_datapoints()
 
 
-		print(self.train_df)
+		#print(self.train_df)
 
 
 		# assign clusters
@@ -194,41 +196,58 @@ class KMeans:
 		#		euclidean distance -> smallest number
 		#		manhattan distance -> smallest number
 
-		for i in range(len(self.train_data)):
 
-			datapoint = self.train_data[i]
+		y=0
+		converge = False
 
+		while not converge:
 
-			if i <= 10:
-			#if True:
-	
-				self.get_distance_to_centroids(datapoint)
+			print("Iteration %s" % y)
 
+			for i in range(len(self.train_data)):
 
-		# evaluate the clusters
-		for k,v in self.clusters.items():
-			print(k,v)
+				if y==100:
+					print("break after 100 iterations")
+					break
 
-
-		new_centroids = self.update_centroids()
-
-		print("\nconverge?")
-		change = False
-		for k,v in new_centroids.items():
-			for ok,ov in self.cluster_names.items():
-
-				if k == ok:
-					# print(v)
-					# print(ov)
-					if v != ov:
-						change = True
+				datapoint = self.train_data[i]
 
 
-		if not change:
-			print("reached stopping criteria! woooo!")
-		else:
-			print("not converged, need to continue until converge")
+				#if i <= 10:
+				if True:
+		
+					self.get_distance_to_centroids(datapoint)
 
+
+			# evaluate the clusters
+			for k,v in self.clusters.items():
+				print(k,v)
+
+
+			new_centroids = self.update_centroids()
+
+			print("\nconverge?")
+			# change = False
+			for k,v in new_centroids.items():
+				for ok,ov in self.cluster_names.items():
+
+					if k == ok:
+						# print(v)
+						# print(ov)
+						if v != ov:
+							change = True
+
+
+			if not change:
+				print("reached stopping criteria! woooo!")
+				converge = True
+			else:
+				print("not converged, need to continue until converge")
+				sc = {}
+				self.clusters = sc
+				self.cluster_names = new_centroids
+
+			y+=1
 
 
 
