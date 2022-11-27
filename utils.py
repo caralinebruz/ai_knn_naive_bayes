@@ -12,3 +12,10 @@ def euclidean_distance_sq(vector_1, vector_2):
 	return euclidean_distance
 
 
+def average(seq):
+
+	if len(seq) == 0:
+		print("PROBLEM\n\n")
+		print(seq)
+
+	return float(sum(seq) / len(seq))
