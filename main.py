@@ -28,9 +28,9 @@ def main(train, test, K, C, verbose, distance_function, centroids):
 
 			if not test:
 				print("did not submit a test file")
+				sys.exit(1)
 
 			k = KNN(verbose, K, distance_function)
-
 			k.train(train)
 			k.test(test)
 
@@ -46,9 +46,11 @@ def main(train, test, K, C, verbose, distance_function, centroids):
 
 			if not test:
 				print("did not submit a test file")
+				sys.exit(1)
 
 			n = NaiveBayes(verbose, C)
 			n.train(train)
+			# n.test(test)
 
 	else:
 		print("use k-means")
