@@ -166,43 +166,7 @@ class KMeans:
 		# 	print(k,v)
 
 
-
-	def train(self, centroids, train):
-
-		# update centroids and num clusters to use
-		self.centroids = centroids
-		self.num_clusters = len(centroids)
-		self.dimensions = len(centroids[0])
-
-		self.name_centroids()
-		
-
-		clean = self.clean(train)
-		df = pd.DataFrame(data=clean)
-		df.columns = [*df.columns[:-1], 'Name']
-
-
-
-
-		if self.num_clusters != self.numcols - 1:
-			print("error, centroids are not same N-dimension as training data. abort")
-			sys.exit(1)
-
-		self.train_data = clean
-		self.train_df = df
-		# also add a dictionary of all datapoints
-		self.save_dict_of_all_datapoints()
-
-
-		#print(self.train_df)
-
-
-		# assign clusters
-		# for each of the datapoints, measure the distance to each of the centroids
-		# pick the relevant centroid index:
-		#		euclidean distance -> smallest number
-		#		manhattan distance -> smallest number
-
+	def iterate_to_convergence(self):
 
 		y=0
 		converge = False
@@ -272,6 +236,134 @@ class KMeans:
 
 
 			y+=1
+
+		return True
+
+
+	def print_results(self):
+
+		for cluster_name, items in self.clusters.items():
+
+			item_set = set(items)
+			print("%s = %s" % (cluster_name, items))
+
+		for centroid, location in self.cluster_names.items():
+			print("(%s)" % location)
+
+
+
+
+	def train(self, centroids, train):
+
+		# update centroids and num clusters to use
+		self.centroids = centroids
+		self.num_clusters = len(centroids)
+		self.dimensions = len(centroids[0])
+
+		self.name_centroids()
+		
+
+		clean = self.clean(train)
+		df = pd.DataFrame(data=clean)
+		df.columns = [*df.columns[:-1], 'Name']
+
+
+
+
+		if self.dimensions != self.numcols - 1:
+			print("error, centroids are not same N-dimension as training data. abort")
+			sys.exit(1)
+
+		self.train_data = clean
+		self.train_df = df
+		# also add a dictionary of all datapoints
+		self.save_dict_of_all_datapoints()
+
+
+
+		finished = self.iterate_to_convergence()
+		if finished:
+			self.print_results()
+
+
+		#print(self.train_df)
+
+
+		# assign clusters
+		# for each of the datapoints, measure the distance to each of the centroids
+		# pick the relevant centroid index:
+		#		euclidean distance -> smallest number
+		#		manhattan distance -> smallest number
+
+
+		# y=0
+		# converge = False
+
+		# while not converge:
+
+		# 	print("Iteration %s" % y)
+		# 	self.initialize_clusters()
+
+		# 	for i in range(len(self.train_data)):
+
+		# 		if y==500:
+		# 			print("break after 100 iterations")
+		# 			break
+
+		# 		datapoint = self.train_data[i]
+
+
+		# 		#if i <= 10:
+		# 		if True:
+		
+		# 			self.get_distance_to_centroids(datapoint)
+
+
+		# 	# evaluate the clusters
+		# 	for k,v in self.clusters.items():
+		# 		print(k,v)
+
+
+		# 	new_centroids = self.update_centroids()
+
+		# 	change = False
+		# 	for k,v in new_centroids.items():
+		# 		for ok,ov in self.cluster_names.items():
+
+		# 			if k == ok:
+
+		# 				# my tolerance is simply to the nearest int
+		# 				int_v = list(map(int, v))
+		# 				int_ov = list(map(int, ov))
+
+		# 				if int_v != int_ov:
+		# 					change = True
+						
+
+
+
+
+		# 	if not change:
+		# 		converge = True
+
+		# 		if self.verbose:
+		# 			print("reached stopping criteria after %s iterations." % y)
+				
+		# 	else:
+		# 		# print("not converged, need to continue until converge")
+
+		# 		# print("old centroids:")
+		# 		# for k,v in self.cluster_names.items():
+		# 		# 	print(k,v)
+		# 		# print("new centroids:")
+		# 		# for k,v in new_centroids.items():
+		# 		# 	print(k,v)
+
+		# 		self.cluster_names = new_centroids
+
+
+
+		# 	y+=1
 
 
 
