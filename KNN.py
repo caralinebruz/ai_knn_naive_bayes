@@ -1,26 +1,12 @@
 ''' K-Nearest Neighbors Classifier
 '''
 import sys
-# for average per row
+
 import numpy as np
 import pandas as pd
 
-
-def dot_prod(vector_1, vector_2):
-	return float(sum(float(x) * float(y) for x, y in zip(vector_1, vector_2)))
-
-def mag(vec):
-	return float(sqrt(dot_prod(vec, vec)))
-
-
-def euclidean_distance_sq(vector_1, vector_2):
-	# define the euclidean distance (squared)
-	# https://machinelearningmastery.com/distance-measures-for-machine-learning/
-	euclidean_distance = sum((e1-e2)**2 for e1, e2 in zip(vector_1,vector_2))
-
-	# print("euclidean_distance: %s" % euclidean_distance)
-	return euclidean_distance
-
+import utils
+from utils import euclidean_distance_sq
 
 
 
@@ -62,9 +48,9 @@ class KNN:
 		return data
 
 
-
 	def train(self, data):
-
+		''' Simply cleans the training dataset from the input file
+		'''
 		clean = self.clean(data)
 		df = pd.DataFrame(data=clean)
 		df.columns = [*df.columns[:-1], 'Class']
@@ -74,14 +60,12 @@ class KNN:
 
 
 	def get_distances(self, test_row):
-
-		# for each row in the training data
-		# get the distances
-		# print("using test data set row")
-		# print(test_row)
+		''' Get distance from current row, to all training set points
+			*Returns:
+				an array of distances
+		'''
 		test_set = test_row[:-1]
 		test_set = list(map(int, test_set))
-
 
 		# print("measuring nearest rows...")
 		distances = []
@@ -90,23 +74,20 @@ class KNN:
 			train_set = self.train_data[x][:-1]
 			train_set = list(map(int, train_set))
 
-
-			# print(train_set)
-			# print(test_set)
-
 			if len(test_set) != len(train_set):
 				print("inputs do not have same number of cols. abort")
 				sys.exit(1)
 
 			distances.append(euclidean_distance_sq(test_set, train_set))
 
-
-
 		return distances
 
 
 	def vote(self, distances_df):
-
+		''' Determines the class based on weighted 1/distance
+			*Returns:
+				Selected class of the datapoint
+		'''
 		if self.verbose:
 			print("overall results:")
 			print(distances_df)
@@ -114,15 +95,10 @@ class KNN:
 		# select the K smallest distances (min neighbors)
 		closest_df = distances_df.nsmallest(self.K, 'distances')
 
-		if self.verbose:
-			print("smallest %s rows:" % self.K)
-			print(closest_df)
-
-
-
-		# determine the class based on weighted 1/distance
-
+		# if point is exactly on a datapoint in the training set
+		# immediately return that class of training set
 		exact = closest_df.loc[closest_df['distances'] == 0]
+
 		if not exact.empty:
 			selected_class = exact.iloc[0]['Class']
 			if self.verbose:
@@ -130,25 +106,16 @@ class KNN:
 			return selected_class
 
 		# normalize the distances
-		# except if the distance is zero, avoid divbyzero, use infinity
+		# except if the distance is zero, avoid divbyzero, use 1
 		closest_df['weighted_distance'] = closest_df['distances'].apply(lambda x: 1/x if x>0 else 1)
 
 		if self.verbose:
 			print("apply 1/distance:")
 			print(closest_df)
 
-
-		# # if anything is infinity, just return that class
-		# if np.isinf(closest_df):
-		# 	if self.verbose:
-		# 		print("exact point found")
-		# 	print(closest_df.loc[closest_df['weighted_distance'] == np.inf])
-
 		# sum weighted distances by group 'Class'
 		# https://stackoverflow.com/questions/39922986/how-do-i-pandas-group-by-to-get-sum
 		results_df = closest_df.groupby(['Class'])['weighted_distance'].sum().reset_index()
-		#results_df = closest_df.groupby(['Class'])['weighted_distance'].sum()
-
 		results_df = results_df.sort_values('weighted_distance', ascending=False)
 		
 		if self.verbose:
@@ -178,6 +145,7 @@ class KNN:
 		unique_labels = sorted(list(set(labels)))
 		self.labels = unique_labels
 
+
 	def initialize_precision_recall(self):
 		''' Makes dictionaries for each label
 			for tracking prediction scores
@@ -195,34 +163,32 @@ class KNN:
 		self.correct_prediction = correct_prediction
 
 
-	def calculate_precision_recall(self):
+	def print_precision_recall(self):
+		''' Prints performance of classifier
+		'''
+		if self.verbose:
+			print("actuals")
+			for k,v in self.actual.items():
+				print(k,v)
+			print("predicted")
+			for k,v in self.predicted.items():
+				print(k,v)
+			print("correct")
+			for k,v in self.correct_prediction.items():
+				print(k,v)
 
-		print("actuals")
-		for k,v in self.actual.items():
-			print(k,v)
-
-
-		print("predicted")
-		for k,v in self.predicted.items():
-			print(k,v)
-
-
-		print("correct")
-		for k,v in self.correct_prediction.items():
-			print(k,v)
 
 		for label in self.labels:
 			print("Label=%s Precision=%s/%s Recall=%s/%s" % (label, self.correct_prediction[label], self.predicted[label], self.correct_prediction[label], self.actual[label]))
 
 
-
 	def test(self, data):
-
+		''' Primary logic for the knn algorithm
+		'''
 		clean = self.clean(data)
 		df = pd.DataFrame(data=clean)
 		df.columns = [*df.columns[:-1], 'Class']
 
-		# print(df)
 		self.test_df = df
 		self.test_data = clean
 
@@ -230,52 +196,38 @@ class KNN:
 		self.prepare_labels()
 		self.initialize_precision_recall()
 
-
 		i = 0
-		# iterate over the test data
 		for i in range(len(clean)):
-
-			# get the distances from this test point to all training set data points
 
 			# make a copy of the train dataframe
 			train_df_copy = self.train_df.copy()
 
-			#if i == 12:
-			if True:
+			# separate the data from the class
+			item = clean[i]
+			items_true_class = item[-1]
 
-				item = clean[i]
-				items_true_class = item[-1]
+			if self.verbose:
+				print("using test row:")
+				print(item)
 
+			# step 1, get the distances from this test point to all training set data points 
+			d = self.get_distances(item)
 
-				if self.verbose:
-					print("using test row:")
-					print(item)
+			train_df_copy['distances'] = d
 
+			# step 2, voting, weighted
+			my_classification = self.vote(train_df_copy)
 
-				d = self.get_distances(item)
+			print("want=%s got=%s" % (items_true_class, my_classification))
 
-				# print(d)
+			self.predicted[my_classification] += 1
+			self.actual[items_true_class] += 1
 
-				train_df_copy['distances'] = d
-
-
-				# represents the distances from the test set
-				# to every point in the training set
-				# print(train_df_copy)
-
-				# step 2, voting, weighted
-				my_classification = self.vote(train_df_copy)
-
-				print("want=%s got=%s" % (items_true_class, my_classification))
-
-				self.predicted[my_classification] += 1
-				self.actual[items_true_class] += 1
-
-				if items_true_class == my_classification:
-					self.correct_prediction[items_true_class] += 1
+			if items_true_class == my_classification:
+				self.correct_prediction[items_true_class] += 1
 
 
-		self.calculate_precision_recall()
+		self.print_precision_recall()
 
 
 

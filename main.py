@@ -15,7 +15,6 @@ from KMeans import KMeans
 
 
 def main(train, test, K, C, verbose, distance_function, centroids):
-	print("OK. starting.")
 
 	# if there are centroids, we are doing kmeans
 	if not centroids:
@@ -24,7 +23,7 @@ def main(train, test, K, C, verbose, distance_function, centroids):
 		if K > 0:
 			# value must be given for KNN
 			# use knn method
-			print("use knn classifier") 
+			print("use knn") 
 			print("using distance function %s" % distance_function)
 
 			if not test:
@@ -38,7 +37,7 @@ def main(train, test, K, C, verbose, distance_function, centroids):
 
 		else:
 			# use naive bayes 
-			print("use naive bayes classifier")
+			print("use naive bayes")
 
 			if not C:
 				print("not using laplacian correction")
@@ -58,9 +57,6 @@ def main(train, test, K, C, verbose, distance_function, centroids):
 
 
 
-
-
-
 # https://stackoverflow.com/questions/33499173/how-to-create-argument-of-type-list-of-pairs-with-argparse
 def pair(arg):
 	# For simplity, assume arg is a pair of integers
@@ -71,29 +67,28 @@ def pair(arg):
 
 
 
-
-
 if __name__ == '__main__':
 	'''
 	USAGE: 
 
 	# KNN 
-	#   ./main.py -train data/inputs/knn.1.train.txt -test data/inputs/knn.1.test.txt -K 3
+		all match profs output
+		./main.py -train data/inputs/knn.1.train.txt -test data/inputs/knn.1.test.txt -K 3
+		./main.py -train data/inputs/knn.2.train.txt -test data/inputs/knn.2.test.txt -K 3
+		./main.py -train data/inputs/knn.3.train.txt -test data/inputs/knn.3.test.txt -K 3
+		./main.py -train data/inputs/knn.3.train.txt -test data/inputs/knn.3.test.txt -K 5
+		./main.py -train data/inputs/knn.3.train.txt -test data/inputs/knn.3.test.txt -K 7
+
 
 	# NAIVE BAYES
-	#	./main.py -train data/inputs/nb.1.train.csv -test data/inputs/nb.1.test.csv
-	# 	./main.py -train data/inputs/nb.1.train.csv -test data/inputs/nb.1.test.csv -C 2
+		./main.py -train data/inputs/nb.1.train.csv -test data/inputs/nb.1.test.csv
+	 	./main.py -train data/inputs/nb.1.train.csv -test data/inputs/nb.1.test.csv -C 2
 
 
 	# KMEANS 
-
-		matches profs output
+		all match profs output
 		./main.py -train data/inputs/kmeans.1.txt -d e2 -centroids 0,500 200,200 1000,1000
-
-		matches profs output
 		./main.py -train data/inputs/kmeans.2.txt -d e2 -centroids 0,0,0 200,200,200 500,500,500
-
-		matches profs output
 		./main.py -train data/inputs/kmeans.2.txt -d manh -centroids 0,0,0 200,200,200 500,500,500
 	'''
 
