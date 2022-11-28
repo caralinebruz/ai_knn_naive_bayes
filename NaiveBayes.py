@@ -179,8 +179,6 @@ class NaiveBayes:
 		# get the total (for normalization)
 		self.total_rows = self.get_total_rows()
 
-		print("total rows in file: %s" % self.total_rows)
-
 		# get the priors
 		self.make_prior_probabilities()
 
