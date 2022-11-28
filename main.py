@@ -50,7 +50,7 @@ def main(train, test, K, C, verbose, distance_function, centroids):
 
 			n = NaiveBayes(verbose, C)
 			n.train(train)
-			# n.test(test)
+			n.test(test)
 
 	else:
 		print("use k-means")

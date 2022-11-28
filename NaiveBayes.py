@@ -23,6 +23,8 @@ class NaiveBayes:
 		self.test_df = None
 
 		self.total_rows = 0
+		self.total_rows_by_class = {}
+
 
 		self.priors = {}
 
@@ -61,6 +63,8 @@ class NaiveBayes:
 		labels.extend(labels_in_train)
 
 		unique_labels = sorted(list(set(labels)))
+		unique_labels = list(map(str, unique_labels))
+
 		self.labels = unique_labels
 
 
@@ -77,23 +81,41 @@ class NaiveBayes:
 			print("label:%s rows:%s" % (label, num_rows_of_class))
 
 			self.priors[label] = (num_rows_of_class / self.total_rows)
+			self.total_rows_by_class[label] = num_rows_of_class
 
 		for k,v in self.priors.items():
 			print(k,v)
 
 
 	def get_total_rows(self):
+		''' *Returns:
+				a single integer 
+		'''
 		return len(self.train_df.index)
+
+	# def make_total_rows_by_class(self):
+	# 	''' *Returns:
+	# 			A dictionary of total rows by class
+	# 	'''
+	# 	for label in self.labels:
+
+	# 		# get the number of rows with each class
+	# 		num_rows_of_class = len(self.train_df[self.train_df.Class == label])
+	# 		print("label:%s rows:%s" % (label, num_rows_of_class))
+
+	# 		self.totals_by_class[str(label)] = num_rows_of_class
 
 
 	def print_likelihoods(self):
-		for cl, v in self.likelihoods.items():
-			print("{'%s':" % cl)
-			for col, uniquevals in self.likelihoods[cl].items():
-				print("\t{'%s':" % col)
-				print("\t\t", uniquevals)
-				print("\t}")
-			print("}")
+		# if self.verbose:
+		if True:
+			for cl, v in self.likelihoods.items():
+				print("{'%s':" % cl)
+				for col, uniquevals in self.likelihoods[cl].items():
+					print("\t{'%s':" % col)
+					print("\t\t", uniquevals)
+					print("\t}")
+				print("}")
 
 	def make_likelihoods(self):
 		''' Creates the conditional probabilities
@@ -123,7 +145,7 @@ class NaiveBayes:
 
 			print(byclass_df)
 
-			likelihoods[str(label)] = {}
+			likelihoods[label] = {}
 
 			# next, fill in predictor names
 			for column in byclass_df.columns:
@@ -133,7 +155,7 @@ class NaiveBayes:
 
 					#print("\tcolumn: %s " % column)
 
-					likelihoods[str(label)][str(column)] = {}
+					likelihoods[label][str(column)] = {}
 
 					# get unique values in that column
 					unique_values = byclass_df[column].unique()
@@ -148,7 +170,7 @@ class NaiveBayes:
 						freq = len(byclass_df.loc[byclass_df[column] == unique_value])
 
 						# assign frequency 
-						likelihoods[str(label)][str(column)][str(unique_value)] = freq
+						likelihoods[label][str(column)][str(unique_value)] = freq
 
 
 		# once finished parsing the table, save
@@ -170,11 +192,16 @@ class NaiveBayes:
 
 		# get the total (for normalization)
 		self.total_rows = self.get_total_rows()
+		# self.make_total_rows_by_class()
+
+		# print("total rows by class:")
+		# for k,v in self.total_rows_by_class.items():
+		# 	print(k,v)
 
 		# get the priors
 		self.make_prior_probabilities()
 
-		# get the denominator of conditional probabilities
+		# get the conditional probabilities frequencies
 		self.make_likelihoods()
 
 
@@ -185,11 +212,76 @@ class NaiveBayes:
 										 		values of this dict will be frequency counts
 		'''
 
+	def classify(self, item):
+		''' Attempt to classify the item 
+		'''
+		items_class = item[-1]
+		items_data = item[:-1]
+
+		data = items_data.copy()
+
+		# data_vec = list(map(int, data_vec))
+
+		# create the equation h(x) for each potential class (my case, T/F)
+
+		for label in self.labels:
+
+
+			h_x = self.priors[label]
+
+			print("h_x prior = %s" % h_x)
+
+
+			# each predictor has form:
+			#
+			# (num rows containing val, cond on class) / (total_by_class)
+			#
+
+
+			for i in range(len(data)):
+
+				# value = data.pop()
+				value = data[i]
+
+				num_rows_containing_val_c_class = 0
+
+				# test = self.likelihoods[label][str(i)][str(value)]
+
+				# age = ages.get('Jim',0)
+				test = self.likelihoods[label][str(i)].get(str(value))
+
+				print("TEST VAL %s" % test)
+
+
+
+				if value in self.likelihoods[label][str(i)].keys():
+					print("in there")
+																	 # class  # col  # unique val
+					num_rows_containing_val_c_class = self.likelihoods[label][str(i)][str(value)]
+				
+				else:
+					print("missing")
+
+				numerator = num_rows_containing_val_c_class
+				denominator = self.total_rows_by_class[label]
+
+				print("\tmult %s / %s" % (numerator, denominator))
+				h_x = h_x * (numerator / denominator)
+
+
+
+			print("\th_x:%s" % h_x)
+
+			# then, divide by total rows
+			print("dividing by total rows: %s" % self.total_rows)
+			h_x = h_x / self.total_rows
+
+			print("\th_x:%s" % h_x)
 
 
 
 
-	def test(self):
+	def test(self, data):
 		''' Primary logic
 		'''
 		clean = self.clean(data)
@@ -199,8 +291,21 @@ class NaiveBayes:
 		self.test_df = df
 		self.test_data = clean
 
+
+
 		# # # get the unique values "actuals" in test set
 		# self.prepare_labels()
+
+		print("starting test")
+		for row in self.test_data[:1]:
+
+			print(row)
+
+			if len(row) != self.numcols:
+				print("test row has different N-dimensions from train set. abort")
+				sys.exit(1)
+
+			self.classify(row)
 
 
 
