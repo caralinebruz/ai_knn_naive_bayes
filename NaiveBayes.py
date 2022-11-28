@@ -1,7 +1,7 @@
 ''' Naive Bayes Classifier
 '''
+import sys
 
-# for average per row
 import numpy as np
 import pandas as pd
 
@@ -12,22 +12,16 @@ class NaiveBayes:
 	def __init__(self, verbose, correction):
 		self.verbose = verbose
 		self.correction = correction
-
 		self.numcols = 0
+		self.labels = []
 		self.train_data = None
 		self.train_df = None
-
-		self.labels = []
-
 		self.test_data = None
 		self.test_df = None
 
 		self.total_rows = 0
 		self.total_rows_by_class = {}
-
-
 		self.priors = {}
-
 		self.actual = {}
 		self.predicted = {}
 		self.correct_prediction = {}
@@ -82,13 +76,10 @@ class NaiveBayes:
 
 			# get the number of rows with each class
 			num_rows_of_class = len(self.train_df[self.train_df.Class == label])
-			print("label:%s rows:%s" % (label, num_rows_of_class))
+			# print("label:%s rows:%s" % (label, num_rows_of_class))
 
 			self.priors[label] = (num_rows_of_class / self.total_rows)
 			self.total_rows_by_class[label] = num_rows_of_class
-
-		for k,v in self.priors.items():
-			print(k,v)
 
 
 	def get_total_rows(self):
@@ -99,8 +90,8 @@ class NaiveBayes:
 
 
 	def print_likelihoods(self):
-		# if self.verbose:
-		if True:
+		# prints the frequency counts dictionary
+		if self.verbose:
 			for cl, v in self.likelihoods.items():
 				print("{'%s':" % cl)
 				for col, uniquevals in self.likelihoods[cl].items():
@@ -108,6 +99,7 @@ class NaiveBayes:
 					print("\t\t", uniquevals)
 					print("\t}")
 				print("}")
+
 
 	def make_likelihoods(self):
 		''' Creates the conditional probabilities
@@ -127,7 +119,6 @@ class NaiveBayes:
 				L3 = value in column
 				L4 = count of value in column
 		'''
-		print("make likelihoods")
 		likelihoods = {}
 
 		for label in self.labels:
@@ -135,28 +126,18 @@ class NaiveBayes:
 			# select all rows for each class condition
 			byclass_df = self.train_df.loc[self.train_df['Class'] == label]
 
-			print(byclass_df)
-
+			# print(byclass_df)
 			likelihoods[label] = {}
 
 			# next, fill in predictor names
 			for column in byclass_df.columns:
-
-				
 				if column != 'Class':
 
-					#print("\tcolumn: %s " % column)
-
 					likelihoods[label][str(column)] = {}
-
-					# get unique values in that column
 					unique_values = byclass_df[column].unique()
-					# print("\t",unique_values)
 
 					# for each unique value, save the frequency of the column
 					for unique_value in unique_values:
-
-						#print("\tfrequency of value %s in column %s" % (unique_value, column))
 
 						# https://stackoverflow.com/questions/17071871/how-do-i-select-rows-from-a-dataframe-based-on-column-values
 						freq = len(byclass_df.loc[byclass_df[column] == unique_value])
@@ -167,7 +148,7 @@ class NaiveBayes:
 
 		# once finished parsing the table, save
 		self.likelihoods = likelihoods
-		self.print_likelihoods()
+		# self.print_likelihoods()
 
 
 	def train(self, data):
@@ -180,7 +161,7 @@ class NaiveBayes:
 		self.train_data = clean
 		self.train_df = df
 
-		print(self.train_df)
+		# print(self.train_df)
 
 		# get the total (for normalization)
 		self.total_rows = self.get_total_rows()
@@ -210,7 +191,10 @@ class NaiveBayes:
 
 
 	def classify(self, item):
-		''' Attempt to classify the item 
+		''' Makes a prediction on the items class
+
+			*Returns:
+				A selected class 
 		'''
 		items_class = item[-1]
 		items_data = item[:-1]
@@ -222,8 +206,8 @@ class NaiveBayes:
 
 			h_x = self.priors[label]
 
-			# print("h_x prior = %s" % h_x)
-			print("P(C=%s) = [%s]" % (label, h_x))
+			if self.verbose:
+				print("P(C=%s) = [%s]" % (label, h_x))
 
 			for i in range(len(data)):
 
@@ -245,14 +229,14 @@ class NaiveBayes:
 				numerator = num_rows_containing_val_c_class
 				denominator = self.total_rows_by_class[label]
 
-				# print("\tmult %s / %s" % (numerator, denominator))
-				print("P(%s=%s | C=%s) %s / %s" % (i, value, label, numerator, denominator))
+				if self.verbose:
+					print("P(A%s=%s | C=%s) %s / %s" % (i, value, label, numerator, denominator))
 
 				h_x = h_x * (numerator / denominator)
 
 
-			# print("\th_x:%s" % h_x)
-			print("NB(C=%s) = %s" % (label, h_x))
+			if self.verbose:
+				print("NB(C=%s) = %s" % (label, h_x))
 
 			# stash the computation for argmax
 			arg[label] = h_x
@@ -280,25 +264,26 @@ class NaiveBayes:
 	def print_precision_recall(self):
 		''' Prints performance of classifier
 		'''
-		if self.verbose:
-			print("actuals")
-			for k,v in self.actual.items():
-				print(k,v)
-			print("predicted")
-			for k,v in self.predicted.items():
-				print(k,v)
-			print("correct")
-			for k,v in self.correct_prediction.items():
-				print(k,v)
-
+		# if self.verbose:
+		# 	print("actuals")
+		# 	for k,v in self.actual.items():
+		# 		print(k,v)
+		# 	print("predicted")
+		# 	for k,v in self.predicted.items():
+		# 		print(k,v)
+		# 	print("correct")
+		# 	for k,v in self.correct_prediction.items():
+		# 		print(k,v)
 
 		for label in self.labels:
 			print("Label=%s Precision=%s/%s Recall=%s/%s" % (label, self.correct_prediction[label], self.predicted[label], self.correct_prediction[label], self.actual[label]))
 
 
-
 	def test(self, data):
-		''' 
+		''' Calls classify 
+			then, evaluates the predicted class
+
+			prints results of confusion matrix at end
 		'''
 		clean = self.clean(data)
 		df = pd.DataFrame(data=clean)
@@ -311,7 +296,7 @@ class NaiveBayes:
 
 		for row in self.test_data:
 
-			print(row)
+			# print(row)
 			actual_class = row[-1]
 
 			if len(row) != self.numcols:
@@ -321,6 +306,7 @@ class NaiveBayes:
 			# make a prediction
 			prediction = self.classify(row)
 
+			# evaluate that prediction
 			if self.verbose:
 				if prediction != actual_class:
 					print("fail: got '%s' != want '%s'" % (prediction, actual_class))
