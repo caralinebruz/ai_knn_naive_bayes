@@ -40,7 +40,8 @@ def main(train, test, K, C, verbose, distance_function, centroids):
 			print("use naive bayes")
 
 			if not C:
-				print("not using laplacian correction")
+				#print("not using laplacian correction")
+				pass
 			else:
 				print("using laplacian correction value %s" % C)
 
@@ -83,8 +84,13 @@ if __name__ == '__main__':
 
 
 	# NAIVE BAYES
-		./main.py -train data/inputs/nb.1.train.csv -test data/inputs/nb.1.test.csv
+		all match profs output
+		./main.py -train data/inputs/nb.1.train.csv -test data/inputs/nb.1.test.csv -C 0
+		./main.py -train data/inputs/nb.1.train.csv -test data/inputs/nb.1.test.csv -C 1
 	 	./main.py -train data/inputs/nb.1.train.csv -test data/inputs/nb.1.test.csv -C 2
+	 	./main.py -train data/inputs/nb.2.train.csv -test data/inputs/nb.2.test.csv -C 0
+	 	./main.py -train data/inputs/nb.2.train.csv -test data/inputs/nb.2.test.csv -C 1
+	 	./main.py -train data/inputs/nb.2.train.csv -test data/inputs/nb.2.test.csv -C 2
 
 
 	# KMEANS 
@@ -123,7 +129,7 @@ if __name__ == '__main__':
 	
 
 	args = parser.parse_args()
-	print(args)
+	#print(args)
 
 	if not args.train:
 		print("no train file")

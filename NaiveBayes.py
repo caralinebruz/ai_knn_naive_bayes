@@ -12,6 +12,7 @@ class NaiveBayes:
 	def __init__(self, verbose, correction):
 		self.verbose = verbose
 		self.correction = correction
+		self.domain = {}
 		self.numcols = 0
 		self.labels = []
 		self.train_data = None
@@ -89,6 +90,20 @@ class NaiveBayes:
 		return len(self.train_df.index)
 
 
+	def make_domain(self):
+		''' Save the domain of each predictive attribute
+		'''
+		domain = {}
+		# for each predictor column
+		# get the count of unique values in the row.
+		for x in range(self.numcols - 1):
+
+			d = len(self.train_df[x].unique())
+			domain[str(x)] = d
+
+		self.domain = domain
+
+
 	def print_likelihoods(self):
 		# prints the frequency counts dictionary
 		if self.verbose:
@@ -161,16 +176,19 @@ class NaiveBayes:
 		self.train_data = clean
 		self.train_df = df
 
-		# print(self.train_df)
-
 		# get the total (for normalization)
 		self.total_rows = self.get_total_rows()
+
+		print("total rows in file: %s" % self.total_rows)
 
 		# get the priors
 		self.make_prior_probabilities()
 
 		# get the conditional probabilities frequencies
 		self.make_likelihoods()
+
+		# also get domain of each predictor
+		self.make_domain()
 
 
 	def _argmax(self, h_x):
@@ -199,7 +217,6 @@ class NaiveBayes:
 		items_class = item[-1]
 		items_data = item[:-1]
 		data = items_data.copy()
-
 		arg = {}
 
 		for label in self.labels:
@@ -221,13 +238,12 @@ class NaiveBayes:
 				if value in self.likelihoods[label][str(i)].keys():
 																	 # class  # col  # unique val
 					num_rows_containing_val_c_class = self.likelihoods[label][str(i)][str(value)]
-				
 				else:
-					# otherwise use default 0 numerator
 					num_rows_containing_val_c_class = 0
 
-				numerator = num_rows_containing_val_c_class
-				denominator = self.total_rows_by_class[label]
+				# add laplacian correction (if any) to numerator
+				numerator = num_rows_containing_val_c_class + self.correction
+				denominator = self.total_rows_by_class[label] + (self.correction * self.domain[str(i)])
 
 				if self.verbose:
 					print("P(A%s=%s | C=%s) %s / %s" % (i, value, label, numerator, denominator))
@@ -280,10 +296,9 @@ class NaiveBayes:
 
 
 	def test(self, data):
-		''' Calls classify 
-			then, evaluates the predicted class
+		''' Calls classify, evaluates the predicted class
 
-			prints results of confusion matrix at end
+			finally, prints results of confusion matrix
 		'''
 		clean = self.clean(data)
 		df = pd.DataFrame(data=clean)
